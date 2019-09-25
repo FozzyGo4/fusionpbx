@@ -122,7 +122,7 @@
 		sql = sql .. "follow_me_enabled, follow_me_caller_id_uuid, follow_me_ignore_busy ";
 		sql = sql .. "from v_follow_me ";
 		sql = sql .. "where domain_uuid = :domain_uuid ";
-		sql = sql .. "follow_me_uuid = :follow_me_uuid; ";
+		sql = sql .. "and follow_me_uuid = :follow_me_uuid; ";
 		local params = {domain_uuid = domain_uuid,follow_me_uuid = follow_me_uuid};
 		if (debug["sql"]) then
 			freeswitch.consoleLog("notice", "SQL:" .. sql .. "; params: " .. json.encode(params) .. "\n");
@@ -329,16 +329,6 @@
 						caller_is_local = api:executeString(cmd);
 					end
 
-				--set the outbound caller id
-					if (session:ready() and caller_is_local) then
-						if (outbound_caller_id_name ~= nil) then
-							caller_id_name = outbound_caller_id_name;
-						end
-						if (outbound_caller_id_number ~= nil) then
-							caller_id_number = outbound_caller_id_number;
-						end
-					end
-
 				--get the destination caller id name and number
 					if (follow_me_caller_id_uuid ~= nil) then
 						local sql = "select destination_uuid, destination_number, destination_description, destination_caller_id_name, destination_caller_id_number ";
@@ -354,6 +344,16 @@
 							caller_id_name = field["destination_caller_id_name"];
 							caller_id_number = field["destination_caller_id_number"];
 						end);
+					end
+
+				--set the outbound caller id
+					if (session:ready() and caller_is_local) then
+						if (outbound_caller_id_name ~= nil) then
+							caller_id_name = outbound_caller_id_name;
+						end
+						if (outbound_caller_id_number ~= nil) then
+							caller_id_number = outbound_caller_id_number;
+						end
 					end
 
 				--set the caller id
