@@ -323,11 +323,7 @@
 						toll_allow = '';
 					end
 
-				--check if the user exists
-					if tonumber(caller_id_number) ~= nil then
-						cmd = "user_exists id ".. caller_id_number .." "..domain_name;
-						caller_is_local = api:executeString(cmd);
-					end
+				
 
 				--get the destination caller id name and number
 					if (follow_me_caller_id_uuid ~= nil) then
@@ -346,6 +342,11 @@
 						end);
 					end
 
+				--check if the user exists
+					if tonumber(caller_id_number) ~= nil then
+						cmd = "user_exists id ".. caller_id_number .." "..domain_name;
+						caller_is_local = api:executeString(cmd);
+					end
 				--set the outbound caller id
 					if (session:ready() and caller_is_local) then
 						if (outbound_caller_id_name ~= nil) then
