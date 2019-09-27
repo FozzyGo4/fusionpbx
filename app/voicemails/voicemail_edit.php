@@ -17,7 +17,7 @@
 
  The Initial Developer of the Original Code is
  Mark J Crane <markjcrane@fusionpbx.com>
- Portions created by the Initial Developer are Copyright (C) 2008-2018
+ Portions created by the Initial Developer are Copyright (C) 2008-2019
  the Initial Developer. All Rights Reserved.
 
  Contributor(s):
@@ -128,6 +128,14 @@ if (count($_POST) > 0 && strlen($_POST["persistformvar"]) == 0) {
 	if ($action == "update") {
 		$voicemail_uuid = $_POST["voicemail_uuid"];
 	}
+
+	//validate the token
+		$token = new token;
+		if (!$token->validate($_SERVER['PHP_SELF'])) {
+			message::add($text['message-invalid_token'],'negative');
+			header('Location: voicemails.php');
+			exit;
+		}
 
 	//check for all required data
 		if (strlen($msg) > 0 && strlen($_POST["persistformvar"]) == 0) {
@@ -296,6 +304,10 @@ if (count($_POST) > 0 && strlen($_POST["persistformvar"]) == 0) {
 	$greetings = $database->select($sql, $parameters, 'all');
 	unset($sql, $parameters);
 
+//create token
+	$object = new token;
+	$token = $object->create($_SERVER['PHP_SELF']);
+
 //show the header
 	require_once "resources/header.php";
 	$document['title'] = $text['title-voicemail'];
@@ -342,7 +354,7 @@ if (count($_POST) > 0 && strlen($_POST["persistformvar"]) == 0) {
 	echo "	<br><br>";
 	echo "</td>\n";
 	echo "<td width='70%' align='right' valign='top'>\n";
-	echo "	<input type='button' class='btn' name='' alt='".$text['button-back']."' onclick=\"javascript:history.back();\" value='".$text['button-back']."'>\n";
+	echo "	<input type='button' class='btn' name='' alt='".$text['button-back']."' onclick=\"window.location='voicemails.php'\" value='".$text['button-back']."'>\n";
 	if ($password_complexity == "true") {
 		echo "		<input type='button' class='btn' value='".$text['button-save']."' onclick=\"if (check_password_strength(document.getElementById('password').value)) { submit_form(); }\">";
 	} else {
@@ -530,7 +542,7 @@ if (count($_POST) > 0 && strlen($_POST["persistformvar"]) == 0) {
 	echo $text['description-voicemail_mail_to']."\n";
 	echo "</td>\n";
 	echo "</tr>\n";
-	if(permission_exists('voicemail_sms_edit')) {
+	if(permission_exists('sms_edit')) {
 		echo "<tr>\n";
 		echo "<td class='vncell' valign='top' align='left' nowrap='nowrap'>\n";
 		echo "	".$text['label-voicemail_sms_to']."\n";
@@ -719,10 +731,12 @@ if (count($_POST) > 0 && strlen($_POST["persistformvar"]) == 0) {
 	$http_referer = parse_url($_SERVER["HTTP_REFERER"]);
 	echo "				<input type='hidden' name='referer_path' value='".escape($http_referer['path'])."'>\n";
 	echo "				<input type='hidden' name='referer_query' value='".escape($http_referer['query'])."'>\n";
+	echo "				<input type='hidden' name='".$token['name']."' value='".$token['hash']."'>\n";
 	echo "				<br>";
 	if ($password_complexity == "true") {
 		echo "			<input type='button' class='btn' value='".$text['button-save']."' onclick=\"if (check_password_strength(document.getElementById('password').value)) { submit_form(); }\">";
-	} else {
+	}
+	else {
 		echo "			<input type='button' class='btn' value='".$text['button-save']."' onclick='submit_form();'>\n";
 	}
 	echo "		</td>\n";

@@ -82,6 +82,14 @@
 				}
 			}
 
+		//validate the token
+			$token = new token;
+			if (!$token->validate($_SERVER['PHP_SELF'])) {
+				message::add($text['message-invalid_token'],'negative');
+				header('Location: devices.php');
+				exit;
+			}
+
 		//check for all required data
 			$msg = '';
 			if (strlen($device_profile_name) == 0) { $msg .= $text['message-required']." ".$text['label-device_profile_name']."<br>\n"; }
@@ -209,10 +217,12 @@
 
 //get the vendor count
 	$vendor_count = 0;
-	foreach($device_profile_keys as $row) {
-		if ($previous_vendor != $row['profile_key_vendor']) {
-			$previous_vendor = $row['profile_key_vendor'];
-			$vendor_count++;
+	if (is_array($device_profile_keys) && @sizeof($device_profile_keys) != 0) {
+		foreach($device_profile_keys as $row) {
+			if ($previous_vendor != $row['profile_key_vendor']) {
+				$previous_vendor = $row['profile_key_vendor'];
+				$vendor_count++;
+			}
 		}
 	}
 
@@ -242,7 +252,7 @@
 	}
 
 //add an empty row
-	$x = count($device_profile_keys);
+	$x = is_array($device_profile_keys) ? count($device_profile_keys) : 0;
 	$device_profile_keys[$x]['domain_uuid'] = $domain_uuid;
 	$device_profile_keys[$x]['device_profile_uuid'] = $device_profile_uuid;
 	$device_profile_keys[$x]['device_profile_key_uuid'] = uuid();
@@ -276,7 +286,7 @@
 	}
 
 //add an empty row
-	$x = count($device_profile_settings);
+	$x = is_array($device_profile_settings) ? count($device_profile_settings) : 0;
 	$device_profile_settings[$x]['domain_uuid'] = $domain_uuid;
 	$device_profile_settings[$x]['device_profile_uuid'] = $device_profile_uuid;
 	$device_profile_settings[$x]['device_profile_setting_uuid'] = uuid();
@@ -289,6 +299,10 @@
 	if (!is_uuid($device_profile_uuid)) {
 		$device_profile_uuid = null;
 	}
+
+//create token
+	$object = new token;
+	$token = $object->create($_SERVER['PHP_SELF']);
 
 //show the header
 	require_once "resources/header.php";
@@ -686,8 +700,9 @@
 
 	echo "	<tr>\n";
 	echo "		<td colspan='2' align='right'>\n";
-	echo "				<input type='hidden' name='device_profile_uuid' value='".escape($device_profile_uuid)."'>\n";
-	echo "				<input type='submit' class='btn' value='".$text['button-save']."'>\n";
+	echo "			<input type='hidden' name='device_profile_uuid' value='".escape($device_profile_uuid)."'>\n";
+	echo "			<input type='hidden' name='".$token['name']."' value='".$token['hash']."'>\n";
+	echo "			<input type='submit' class='btn' value='".$text['button-save']."'>\n";
 	echo "		</td>\n";
 	echo "	</tr>";
 	echo "</table>";

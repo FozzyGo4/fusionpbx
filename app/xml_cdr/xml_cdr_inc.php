@@ -105,7 +105,7 @@
 	}
 
 //check to see if permission does not exist
-	if(!permission_exists(xml_cdr_b_leg)){
+	if(!permission_exists('xml_cdr_b_leg')){
 		$leg = 'a';
 	}
 
@@ -181,7 +181,7 @@
 	}
 
 //create the sql query to get the xml cdr records
-	if (strlen($order_by) == 0) { $order_by  = "start_epoch"; }
+	if (strlen($order_by) == 0) { $order_by  = "start_stamp"; }
 	if (strlen($order) == 0) { $order  = "desc"; }
 
 //set a default number of rows to show
